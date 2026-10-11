@@ -1,0 +1,47 @@
+
+name: Build BASSFORGE Windows VST3
+
+'on':
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Windows VST3 and Standalone
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build
+          -G "Visual Studio 17 2022"
+          -A x64
+          -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build BASSFORGE
+        run: cmake --build build --config Release --parallel 4
+
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: BASSFORGE-Windows-VST3
+          path: |
+            build/**/*_artefacts/Release/VST3/**
+          if-no-files-found: warn
+
+      - name: Upload Standalone
+        uses: actions/upload-artifact@v4
+        with:
+          name: BASSFORGE-Windows-Standalone
+          path: |
+            build/**/*_artefacts/Release/Standalone/**
+          if-no-files-found: warn
